@@ -38,7 +38,7 @@ class MyEventHandler(TranscriptResultStreamHandler):
                 f = get_face(r)
                 k = get_key_phrases(r)
                 os.system('clear')
-                print(f + alt.transcript + '\n')
+                print(f + ' ' + alt.transcript + '\n')
                 print(k)
 
 def get_req(text: str) -> list:
@@ -66,10 +66,10 @@ def get_face(req: list) -> str:
 
 
 def get_key_phrases(req: list) -> str:
-    kp = '|'
+    kp = '| '
     key_phrases = req.get('key_phrases')
     for k in key_phrases:
-        kp += k + '|'
+        kp += k + ' | '
     return kp
 
 async def basic_transcribe():
