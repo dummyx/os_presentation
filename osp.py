@@ -1,18 +1,32 @@
 import asyncio
+import os
+
 # This example uses aiofile for asynchronous file reads.
 # It's not a dependency of the project but can be installed
 # with `pip install aiofile`.
 import aiofile
 
+import requests
+import urllib.parse
+
 from amazon_transcribe.client import TranscribeStreamingClient
 from amazon_transcribe.handlers import TranscriptResultStreamHandler
 from amazon_transcribe.model import TranscriptEvent
+
+api_url = ""
+api_resource = ""
 
 """
 Here's an example of a custom event handler you can extend to
 process the returned transcription results as needed. This
 handler will simply print the text out to your interpreter.
 """
+
+
+def move(y, x):
+    print("\033[%d;%dH" % (y, x))
+
+
 class MyEventHandler(TranscriptResultStreamHandler):
     async def handle_transcript_event(self, transcript_event: TranscriptEvent):
         # This handler can be implemented to handle transcriptions as needed.
@@ -20,8 +34,43 @@ class MyEventHandler(TranscriptResultStreamHandler):
         results = transcript_event.transcript.results
         for result in results:
             for alt in result.alternatives:
-                print(alt.transcript)
+                r = get_req(alt.transcript)
+                f = get_face(r)
+                k = get_key_phrases(r)
+                os.system('clear')
+                print(f + alt.transcript + '\n')
+                print(k)
 
+def get_req(text: str) -> list:
+    arg = urllib.parse.quote(text)
+    url = api_url + api_resource + '?' + 'content=' + arg
+    req = requests.get(url).json()
+    return req
+
+def get_face(req: list) -> str:
+    sentiment = req.get('sentiment')
+    max_value = max(sentiment.get('Neutral'), sentiment.get(
+        'Mixed'), sentiment.get('Negative'), sentiment.get('Positive'))
+    if max_value > 0.5:
+        if max_value == sentiment.get('Neutral'):
+            face = '😑'
+        elif max_value == sentiment.get('Mixed'):
+            face = '🤔'
+        elif max_value == sentiment.get('Negative'):
+            face = '😡'
+        elif max_value == sentiment.get('Positive'):
+            face = '😍'
+    else:
+        face = '😑'
+    return face
+
+
+def get_key_phrases(req: list) -> str:
+    kp = '|'
+    key_phrases = req.get('key_phrases')
+    for k in key_phrases:
+        kp += k + '|'
+    return kp
 
 async def basic_transcribe():
     # Setup up our client with our chosen AWS region
