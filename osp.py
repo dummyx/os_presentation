@@ -79,7 +79,7 @@ async def basic_transcribe():
     # Start transcription to generate our async stream
     stream = await client.start_stream_transcription(
         language_code="ja-JP",
-        media_sample_rate_hz=22050,
+        media_sample_rate_hz=24000,
         media_encoding="pcm",
     )
 
